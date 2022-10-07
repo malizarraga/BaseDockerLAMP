@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+    nginx:
+        container_name: ${SERVER_NAME}.nginx
+        image: nginx:latest
+        env_file: 
+            - .env
+        ports:
+            - "80:80"
+        volumes:
+            - ./dev/app:/var/www/html/app:delegated
+            - ./nginx-conf:/etc/nginx/conf.d:delegated
+        depends_on:
+            - php
+    php:
+        container_name: ${SERVER_NAME}.php
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - db
+        ports:
+            - "9000:9000"
+        env_file: 
+            - .env
+        volumes:
+            - ./dev/app:/var/www/html/app:delegated
+            - ./config/xphpconfig.ini:/etc/php/${PHP_VERSION}/fpm/conf.d/xphpconfig.ini:delegated
+            - ./db:/mnt/db:delegated
+    db:
+        container_name: ${SERVER_NAME}.db
+        image: mariadb:10.3
+        ports: 
+            - "3307:3306"
+        env_file: 
+            - .env
+        volumes: 
+            - ./db:/host:delegated
+            - mysql-data:/var/lib/mysql:delegated
+        command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+volumes: 
+    mysql-data:
+        name: data-${SERVER_NAME}

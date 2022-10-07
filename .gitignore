@@ -1,0 +1,8 @@
+# Ignore source project
+dev/app/**/*
+
+# Ignore database backups
+db/**/*
+
+# Ignore environment
+.env
