@@ -2,7 +2,8 @@ FROM ubuntu:latest
 
 ENV TZ="America/Edmonton"
 ENV DEBIAN_FRONTEND="noninteractive"
-ENV PHP_VERSION="8.1"
+ENV PHP_VERSION="8.3"
+ENV NODE_MAJOR=20
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -41,8 +42,9 @@ RUN wget https://phar.phpunit.de/phpunit.phar && \
   mv phpunit.phar /usr/local/bin/phpunit
 
 # Install Node:
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+RUN apt-get update && apt-get install nodejs -y
 
 # Install NVM:
 RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
@@ -57,12 +59,18 @@ COPY config/fpm/php.ini /etc/php/${PHP_VERSION}/fpm/php.ini
 COPY config/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
 
 # Set up run directory for php fpm sock file.
-RUN mkdir /var/run/php
+# RUN mkdir /var/run/php
+
+# Set php cli verions
+RUN update-alternatives --set php /usr/bin/php${PHP_VERSION}
 
 # Set up the www-data user.
 RUN chsh -s /bin/bash www-data
 RUN mkdir /home/www-data
 RUN usermod -d /home/www-data www-data
+
+# Set default site symlink
+RUN ln -s /var/www/html/app www
 
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
