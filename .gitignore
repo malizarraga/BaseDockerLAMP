@@ -1,4 +1,5 @@
 # Ignore source project
+dev/app
 dev/app/**/*
 
 # Ignore database backups
