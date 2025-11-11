@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 ENV TZ="America/Edmonton"
 ENV DEBIAN_FRONTEND="noninteractive"
-ENV PHP_VERSION="8.3"
+ENV PHP_VERSION="8.4"
 ENV NODE_MAJOR=20
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
